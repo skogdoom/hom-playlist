@@ -111,23 +111,22 @@ def get_spotify_client_auth():
 
     return spotipy.Spotify(auth_manager=auth_manager)
 
-
-if __name__ == '__main__':
+def create_playlists():
     bands_by_year = get_bands()
     # print_bands(bands_by_year)
 
     client = get_spotify_client_auth()
 
-    #create_playlist("2020")
-    #add_songs_to_playlist('6MmOQ2bRz7TsjiEyn7aIfO', find_songs('metallica'))
-
     for year, bands in bands_by_year.items():
-        # create playlist for year
-        # print(year)
         playlist_id = create_playlist(client, year)
         for artist in bands_by_year[year]:
             songs = find_songs(client, artist)
             if len(songs) > 0:
                 add_songs_to_playlist(client, playlist_id, songs)
+        sleep(5)  # to make sure we don't hit the rate limit
 
-        sleep(5) # to make sure we don't hit the rate limit
+if __name__ == '__main__':
+    create_playlists()
+
+    # create_playlist("2020")
+    # add_songs_to_playlist('6MmOQ2bRz7TsjiEyn7aIfO', find_songs('metallica'))
