@@ -7,7 +7,7 @@ import uuid
 import hashlib
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
-
+from time import sleep
 
 def get_bands():
     print("Gotta go get a dictionary by year from https://www.houseofmetal.se/en/history/")
@@ -41,10 +41,10 @@ def print_bands(bands_by_year):
             print(band)
 
 
-def find_songs(artist):
+def find_songs(client, artist):
     print("finding songs for " + artist + "...")
-    sp = get_spotify_client()
-    results = sp.search(q='artist:' + artist, type='artist')
+    #sp = get_spotify_client()
+    results = client.search(q='artist:' + artist, type='artist')
 
     items = results['artists']['items']
     track_ids = []
@@ -54,7 +54,7 @@ def find_songs(artist):
         # print(items[0]['name'])
         artist_id = 'spotify:artist:' + items[0]['id']
 
-        top_tracks = sp.artist_top_tracks(artist_id)
+        top_tracks = client.artist_top_tracks(artist_id)
 
         for track in top_tracks['tracks'][:3]:
             track_ids.append(track['id'])
@@ -72,9 +72,9 @@ def create_playlist(client, year):
     playlist = client.user_playlist_create(
         spotify_user_id,
         "HOM {}".format(year),
+        True,
         False,
-        False,
-        "Songs from the House of Metal lineup {}".format(year)
+        "Songs from the House of Metal (houseofmetal.se) lineup {}".format(year)
     )
     print(playlist)
     return playlist['id']
@@ -100,7 +100,7 @@ def get_spotify_client():
 
 
 def get_spotify_client_auth():
-    scope = "playlist-modify-private"
+    scope = "playlist-modify-public"
 
     auth_manager = SpotifyOAuth(
         client_id=spotify_client_id,
@@ -126,6 +126,8 @@ if __name__ == '__main__':
         # print(year)
         playlist_id = create_playlist(client, year)
         for artist in bands_by_year[year]:
-            songs = find_songs(artist)
+            songs = find_songs(client, artist)
             if len(songs) > 0:
                 add_songs_to_playlist(client, playlist_id, songs)
+
+        sleep(5) # to make sure we don't hit the rate limit
