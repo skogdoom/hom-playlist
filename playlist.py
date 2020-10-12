@@ -44,22 +44,23 @@ def print_bands(bands_by_year):
 def find_songs(client, artist):
     print("finding songs for " + artist + "...")
     #sp = get_spotify_client()
-    results = client.search(q='artist:' + artist, type='artist')
+    results = client.search(q=artist, type='artist')
 
-    items = results['artists']['items']
+    items = list(filter(lambda i: i['name'] == artist, results['artists']['items']))
     track_ids = []
 
-    if len(items) > 0:
-        # print(items[0]['id'])
-        # print(items[0]['name'])
-        artist_id = 'spotify:artist:' + items[0]['id']
+    #print(list(map(lambda i: i['name'], items)))
+    #print(list(map(lambda i: i['name'], list(filter(lambda i: i['name'] == artist, items)))))
 
+    if len(items) > 0:
+        #print(artist + " = " + items[0]['name'])
+        artist_id = 'spotify:artist:' + items[0]['id']
         top_tracks = client.artist_top_tracks(artist_id)
 
         for track in top_tracks['tracks'][:3]:
             track_ids.append(track['id'])
             # print(track['id'])
-            # print(track['name'])
+            print(track['name'])
 
     return track_ids
 
@@ -130,3 +131,7 @@ if __name__ == '__main__':
 
     # create_playlist("2020")
     # add_songs_to_playlist('6MmOQ2bRz7TsjiEyn7aIfO', find_songs('metallica'))
+
+    #client = get_spotify_client()
+    #songs = find_songs(client, 'Grid')
+    #print(songs)
