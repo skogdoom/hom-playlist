@@ -39,7 +39,7 @@ def find_songs(client, artist):
 def create_playlist(client, year):
     playlist = client.user_playlist_create(
         spotify_user_id,
-        "HoM {year}",
+        f"HoM {year}",
         True,
         False,
         f"Songs from the House of Metal (houseofmetal.se) lineup {year}"
