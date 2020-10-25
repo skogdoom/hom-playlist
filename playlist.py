@@ -13,12 +13,10 @@ def get_artists():
     artists_by_year = {}
     for element in elements:
         year = element.find('strong')
-
         if year is None:
             continue
 
         artists = element.find('p')
-
         artists_by_year[year.text] = [artist for artist in artists if isinstance(artist, NavigableString)]
 
     return artists_by_year
