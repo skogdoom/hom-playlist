@@ -6,27 +6,22 @@ from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 from time import sleep
 
 
-def get_bands():
+def get_artists():
     source = requests.get('https://www.houseofmetal.se/en/history/').text
     soup = BeautifulSoup(source, 'html.parser')
     elements = soup.select('div.et_pb_text_inner')
-    bands_by_year = {}
+    artists_by_year = {}
     for element in elements:
         year = element.find('strong')
 
         if year is None:
             continue
 
-        bands = element.find('p')
+        artists = element.find('p')
 
-        band_list = []
-        for b in bands:
-            if isinstance(b, NavigableString):
-                band_list.append(b)
+        artists_by_year[year.text] = [artist for artist in artists if isinstance(artist, NavigableString)]
 
-        bands_by_year[year.text] = band_list
-
-    return bands_by_year
+    return artists_by_year
 
 
 def find_songs(client, artist):
@@ -38,9 +33,7 @@ def find_songs(client, artist):
     if len(items) > 0:
         artist_id = 'spotify:artist:' + items[0]['id']
         top_tracks = client.artist_top_tracks(artist_id)
-
-        for track in top_tracks['tracks'][:3]:
-            track_ids.append(track['id'])
+        track_ids = [track['id'] for track in top_tracks['tracks'][:3]]
 
     return track_ids
 
@@ -81,15 +74,15 @@ def get_spotify_client_auth():
 
 
 def create_playlists():
-    print("Getting bands by year from https://www.houseofmetal.se/en/history/")
-    bands_by_year = get_bands()
+    print("Getting artists by year from https://www.houseofmetal.se/en/history/")
+    artists_by_year = get_artists()
 
     client = get_spotify_client_auth()
 
-    for year, bands in bands_by_year.items():
+    for year, artists in artists_by_year.items():
         print(f"Creating playlist for {year}...")
         playlist_id = create_playlist(client, year)
-        for artist in bands_by_year[year]:
+        for artist in artists_by_year[year]:
             print(f"Finding songs for {artist}...")
             songs = find_songs(client, artist)
             if len(songs) > 0:
